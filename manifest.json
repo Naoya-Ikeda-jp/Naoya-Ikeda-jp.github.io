@@ -1,6 +1,6 @@
 {
-  "name": "簡単クリックゲームPWA",
-  "short_name": "クリックゲーム",
+  "name": "邁｡蜊倥け繝ｪ繝�繧ｯ繧ｲ繝ｼ繝PWA",
+  "short_name": "繧ｯ繝ｪ繝�繧ｯ繧ｲ繝ｼ繝",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#ffffff",
