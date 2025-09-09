@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>簡単クリックゲームPWA</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').then(registration => {
+          console.log('Service Worker registered with scope:', registration.scope);
+        }).catch(error => {
+          console.log('Service Worker registration failed:', error);
+        });
+      });
+    }
+  </script>
+</head>
+<body>
+  <h1>簡単クリックゲーム</h1>
+  <p>スコア: <span id="score">0</span></p>
+  <button id="click-btn">クリックしてスコアを増やす</button>
+
+  <script>
+    const btn = document.getElementById('click-btn');
+    const scoreElem = document.getElementById('score');
+    let score = 0;
+    btn.addEventListener('click', () => {
+      score++;
+      scoreElem.textContent = score;
+    });
+  </script>
+</body>
+</html>
