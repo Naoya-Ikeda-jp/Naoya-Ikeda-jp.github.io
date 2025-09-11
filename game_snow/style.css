@@ -1,0 +1,5 @@
+body { font-family: 'Segoe UI', 'Arial', sans-serif; background: #e6f7ff; text-align: center;}
+#game-container { display: inline-block; }
+canvas { background: #f5fdff; border: 2px solid #369; }
+#ui-panel { margin: 10px 0; }
+button { font-size: 1rem; padding: 5px 15px; margin-top: 5px; }

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>雪バキュームサバイバルゲーム</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="game.js"></script>
+</head>
+<body>
+  <h1>雪バキュームサバイバルゲーム</h1>
+  <div id="game-container">
+    <canvas id="gameCanvas" width="320" height="320"></canvas>
+    <div id="ui-panel">
+      <p>
+        雪: <span id="snow">0</span>
+        石炭: <span id="coal">0</span>
+        燃料: <span id="fuel">0</span>
+        HP: <span id="hp">10</span>
+      </p>
+      <button id="addCoal">石炭投入</button>
+      <button id="useVacuum">雪を吸う</button>
+    </div>
+  </div>
+  <a href="../index.html">ホームへ戻る</a>
+</body>
+</html>
