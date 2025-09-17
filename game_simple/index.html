@@ -1,27 +1,232 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>くま討伐 肉売りゲーム</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css">
-  <script defer src="game.js"></script>
+  <meta charset="utf-8"/>
+  <title>くまと狼討伐＆装備強化ゲーム</title>
+  <style>
+    body { margin: 0; background: #eef5fc; }
+    #ui {
+      position: absolute; top: 10px; left: 10px; color: #000;
+      font-family: 'Arial', sans-serif; font-size: 18px;
+      background: rgba(255 255 255 / 0.8); padding: 10px; border-radius: 8px;
+      user-select: none;
+      max-width: 320px;
+    }
+    button { margin-top: 6px; }
+    canvas { display: block; }
+  </style>
 </head>
 <body>
-  <h1>くま討伐 肉売りゲーム</h1>
-  <div id="game-container">
-    <canvas id="gameCanvas" width="320" height="320"></canvas>
-    <div id="ui-panel">
-      <p>
-        肉: <span id="meat">0</span>
-        お金: <span id="money">0</span>
-        HP: <span id="hp">10</span>
-        リュック: <span id="bag">0</span>
-      </p>
-      <button id="sellMeat">肉を売る</button>
-    </div>
-  </div>
-  <a href="../index.html">ホームへ戻る</a>
-</body>
-</html>
+<div id="ui">
+  HP: <span id="hp">10</span><br />
+  肉: <span id="meat">0</span><br />
+  お金: <span id="money">0</span><br />
+  斧レベル: <span id="axeLevel">1</span><button id="buyAxe">斧アップグレード（10$）</button><br />
+  防具レベル: <span id="armorLevel">1</span><button id="buyArmor">防具アップグレード（15$）</button><br />
+  <button id="sellMeat">肉を売る</button>
+  <div id="message" style="color:red; margin-top:8px;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
+<script>
+  // Twemoji URL（画像での表現）
+  const urls = {
+    player: 'https://twemoji.maxcdn.com/v/latest/72x72/1f9d1-1f499.png',
+    bear: 'https://twemoji.maxcdn.com/v/latest/72x72/1f43b.png',
+    wolf: 'https://twemoji.maxcdn.com/v/latest/72x72/1f43a.png',
+    meat: 'https://twemoji.maxcdn.com/v/latest/72x72/1f356.png'
+  };
+
+  // 2Dスプライト作成
+  function makeSprite(url, size=6){
+    const texture = new THREE.TextureLoader().load(url);
+    const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+    const sprite = new THREE.Sprite(material);
+    sprite.scale.set(size,size,size);
+    return sprite;
+  }
+
+  // ゲームデータ
+  let hp = 10;
+  let meat = 0;
+  let money = 0;
+  let axeLevel = 1;
+  let armorLevel = 1;
+
+  // UI要素
+  const ui = {
+    hp: document.getElementById('hp'),
+    meat: document.getElementById('meat'),
+    money: document.getElementById('money'),
+    axeLevel: document.getElementById('axeLevel'),
+    armorLevel: document.getElementById('armorLevel'),
+    message: document.getElementById('message'),
+  };
+
+  // UI更新
+  function updateUI(){
+    ui.hp.textContent = hp;
+    ui.meat.textContent = meat;
+    ui.money.textContent = money;
+    ui.axeLevel.textContent = axeLevel;
+    ui.armorLevel.textContent = armorLevel;
+  }
+
+  // three.js 初期化
+  const width = window.innerWidth;
+  const height = window.innerHeight;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xe1ecf7);
+  const camera = new THREE.PerspectiveCamera(75, width/height, 0.1, 1000);
+  camera.position.set(0, 50, 70);
+  camera.lookAt(0, 0, 0);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(width, height);
+  document.body.appendChild(renderer.domElement);
+
+  // 地面作成
+  const ground = new THREE.Mesh(
+    new THREE
+
+<script>
+// --- 2/3 敵処理／攻撃／肉生成／ゲーム終了処理 --- //
+
+const meatsInScene = []; // 肉管理スプライト
+
+// 敵生成関数
+function spawnEnemy(type = "bear") {
+  const sprite = makeSprite(urls[type], 7);
+  sprite.position.set((Math.random() - 0.5) * 60, 1, (Math.random() - 0.5) * 60);
+  sprite.userData = {
+    type: type,
+    hp: type === "bear" ? 5 : 3,
+    attack: type === "bear" ? 3 : 2,
+    alive: true,
+  };
+  scene.add(sprite);
+  return sprite;
+}
+
+// 敵リスト初期化
+let enemies = [];
+for (let i = 0; i < 4; i++) {
+  enemies.push(spawnEnemy(i % 2 === 0 ? "bear" : "wolf"));
+}
+
+// 肉スプライトをマップに配置
+function addMeatSprite(pos) {
+  const m = makeSprite(urls.meat, 4);
+  m.position.copy(pos);
+  meatsInScene.push(m);
+  scene.add(m);
+}
+
+// 攻撃関数
+function attackEnemy(enemy) {
+  if (!enemy.userData.alive) return;
+  enemy.userData.hp -= axeLevel;
+  if (enemy.userData.hp <= 0) {
+    enemy.userData.alive = false;
+    scene.remove(enemy);
+    meat++;
+    updateUI();
+    addMeatSprite(enemy.position);
+  } else {
+    // 敵がまだ生きてる時、プレイヤーがダメージを受ける
+    const dmg = enemy.userData.attack - armorLevel;
+    if (dmg > 0) {
+      hp -= dmg;
+      if (hp <= 0) {
+        hp = 0;
+        ui.message.textContent = "ゲームオーバー！リロードしてリスタートしてください。";
+      }
+      updateUI();
+    }
+  }
+}
+
+// 距離判定
+function isClose(objA, objB, range) {
+  return objA.position.distanceTo(objB.position) < range;
+}
+
+// 敵行動AI
+function enemyAI(enemy) {
+  if (!enemy.userData.alive) return;
+  const dist = enemy.position.distanceTo(player.position);
+  if (dist < 6) {
+    attackEnemy(enemy);
+  } else {
+    if (enemy.userData.type === "bear") {
+      // くまはプレイヤーに向かう
+      const dx = player.position.x - enemy.position.x;
+      const dz = player.position.z - enemy.position.z;
+      const len = Math.sqrt(dx * dx + dz * dz);
+      if (len > 1) {
+        enemy.position.x += (dx / len) * 0.12;
+        enemy.position.z += (dz / len) * 0.12;
+      }
+    } else {
+      // 狼はランダムに動く
+      enemy.position.x += (Math.random() - 0.5) * 0.4;
+      enemy.position.z += (Math.random() - 0.5) * 0.4;
+    }
+    enemy.position.x = Math.max(-36, Math.min(36, enemy.position.x));
+    enemy.position.z = Math.max(-36, Math.min(36, enemy.position.z));
+  }
+}
+
+// メインループを更新
+function animate() {
+  if (hp <= 0) {
+    renderer.render(scene, camera);
+    return;
+  }
+  movePlayer();
+  enemies.forEach(enemyAI);
+  enemies = enemies.filter(e => e.userData.alive);
+  // 敵の数が少なくなったら補充
+  while (enemies.length < 4) {
+    enemies.push(spawnEnemy(Math.random() < 0.5 ? "bear" : "wolf"));
+  }
+  renderer.render(scene, camera);
+  requestAnimationFrame(animate);
+}
+animate();
+</script>
+
+
+<script>
+// --- 3/3 お金・アップグレード・肉販売処理 --- //
+// 肉を売ってお金増やすボタン連携
+document.getElementById('sellMeat').addEventListener('click', () => {
+  if (meat > 0) {
+    money += meat * 5;
+    meat = 0;
+    updateUI();
+    meatsInScene.forEach(m => scene.remove(m));
+    meatsInScene.length = 0;
+  }
+});
+
+// 斧アップグレード
+document.getElementById('buyAxe').addEventListener('click', () => {
+  if (money >= 10) {
+    money -= 10;
+    axeLevel++;
+    updateUI();
+  }
+});
+
+// 防具アップグレード
+document.getElementById('buyArmor').addEventListener('click', () => {
+  if (money >= 15) {
+    money -= 15;
+    armorLevel++;
+    updateUI();
+  }
+});
+
+</script>
+
