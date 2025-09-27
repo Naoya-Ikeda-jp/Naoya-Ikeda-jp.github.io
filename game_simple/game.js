@@ -1,14 +1,11 @@
 /**
 
-* game.js - Three.jsを用いた3Dサバイバルゲーム
-* * プレイヤーは自動で前進
-* * 敵に近づくと攻撃
-* * アイテム取得でスコア加算
+* game.js - Three.js 3Dサバイバルゲーム（改良版）
+* * 自動前進に加え、WASD/矢印キーで操作可能
+* * 座標表示を追加
+* * 床グリッドで動きを確認しやすく
     */
 
-// =====================
-// 初期セットアップ
-// =====================
 const canvas = document.getElementById("gameCanvas");
 const renderer = new THREE.WebGLRenderer({ canvas });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -20,8 +17,9 @@ const camera = new THREE.PerspectiveCamera(
 75, window.innerWidth / window.innerHeight, 0.1, 1000
 );
 camera.position.set(0, 10, 20);
+camera.lookAt(0, 0, 0);
 
-// 環境光 & 平行光
+// 光源
 const light = new THREE.HemisphereLight(0xffffff, 0x444444, 1.2);
 scene.add(light);
 const dirLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -34,20 +32,27 @@ scene.add(dirLight);
 let player = {
 mesh: null,
 hp: 10,
-speed: 0.05
+speed: 0.05,
+moveX: 0,
+moveZ: 0
 };
 
-// シンプルなボックスをプレイヤーに仮置き
+// 青い箱をプレイヤーに仮置き
 const playerGeometry = new THREE.BoxGeometry(1, 2, 1);
 const playerMaterial = new THREE.MeshStandardMaterial({ color: 0x3399ff });
 player.mesh = new THREE.Mesh(playerGeometry, playerMaterial);
 scene.add(player.mesh);
 
 // =====================
+// 床グリッド（動きを確認しやすい）
+// =====================
+const gridHelper = new THREE.GridHelper(100, 20);
+scene.add(gridHelper);
+
+// =====================
 // 敵・アイテム
 // =====================
 let objects = [];
-const SIZE = 2;
 
 function spawnEnemy() {
 const geom = new THREE.SphereGeometry(1, 16, 16);
@@ -91,16 +96,39 @@ document.getElementById("hp").textContent = player.hp;
 document.getElementById("meat").textContent = meat;
 document.getElementById("money").textContent = money;
 document.getElementById("bag").textContent = bag;
+document.getElementById("pos").textContent =
+`X:${player.mesh.position.x.toFixed(2)} ` +
+`Y:${player.mesh.position.y.toFixed(2)} ` +
+`Z:${player.mesh.position.z.toFixed(2)}`;
 }
 
-// 自動前進 & 当たり判定
+// =====================
+// キー操作
+// =====================
+document.addEventListener("keydown", (e) => {
+if (e.key === "ArrowUp" || e.key === "w") player.moveZ = -0.1;
+if (e.key === "ArrowDown" || e.key === "s") player.moveZ = 0.1;
+if (e.key === "ArrowLeft" || e.key === "a") player.moveX = -0.1;
+if (e.key === "ArrowRight" || e.key === "d") player.moveX = 0.1;
+});
+
+document.addEventListener("keyup", (e) => {
+if (["ArrowUp", "w", "ArrowDown", "s"].includes(e.key)) player.moveZ = 0;
+if (["ArrowLeft", "a", "ArrowRight", "d"].includes(e.key)) player.moveX = 0;
+});
+
+// =====================
+// メインループ
+// =====================
 function animate() {
 requestAnimationFrame(animate);
 
-// プレイヤー自動前進
+// 自動前進 + プレイヤー移動
 player.mesh.position.z -= player.speed;
+player.mesh.position.x += player.moveX;
+player.mesh.position.z += player.moveZ;
 
-// 敵やアイテムとの判定
+// 当たり判定
 objects.forEach((obj, idx) => {
 const dist = player.mesh.position.distanceTo(obj.position);
 if (dist < 2) {
