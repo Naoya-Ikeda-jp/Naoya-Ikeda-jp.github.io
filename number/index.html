@@ -16,6 +16,49 @@
   <div id="ui">
     <div>Score: <span id="score">0</span></div>
   </div>
-  <script type="module" src="./game.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script>
+    // --- シーン作成 ---
+    const scene = new THREE.Scene();
+
+    // --- カメラ ---
+    const camera = new THREE.PerspectiveCamera(
+      75,
+      window.innerWidth / window.innerHeight,
+      0.1,
+      1000
+    );
+    // 後ろ＆上から俯瞰
+    camera.position.set(0, 8, 20);
+    camera.lookAt(0, 0, -50); // ← ゴール方向を見るように調整
+
+    // --- レンダラー ---
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // --- ライト ---
+    scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(5, 10, 5);
+    dirLight.castShadow = true;
+    scene.add(dirLight);
+
+    // --- 例：床 ---
+    const floor = new THREE.Mesh(
+      new THREE.BoxGeometry(20, 0.5, 100),
+      new THREE.MeshStandardMaterial({ color: 0x333366 })
+    );
+    floor.position.set(0, -1, -30);
+    scene.add(floor);
+
+    // --- メインループ ---
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+    animate();
+
+  </script>
 </body>
 </html>
