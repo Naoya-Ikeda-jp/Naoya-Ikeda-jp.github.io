@@ -1,44 +1,25 @@
+<!-- index.html -->
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>3D Survival Game</title>
+  <title>3D RPG Game</title>
   <style>
-    body { margin: 0; overflow: hidden; background: #222; color: white; }
+    body { margin: 0; overflow: hidden; background: #000; }
     #ui {
-      position: absolute; top: 10px; left: 10px; 
-      background: rgba(0,0,0,0.5); padding: 10px; border-radius: 8px;
-      font-family: sans-serif;
+      position: absolute; top: 10px; left: 10px;
+      color: white; font-family: sans-serif;
+      background: rgba(0,0,0,0.5); padding: 10px; border-radius: 5px;
     }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
-
   <div id="ui">
-    <p>HP: <span id="hp">10</span></p>
-    <p>Meat: <span id="meat">0</span></p>
-    <p>Money: <span id="money">0</span></p>
-    <p>Bag: <span id="bag">0</span></p>
-    <p>座標: <span id="pos">X:0 Y:0 Z:0</span></p>
-    <button id="sellMeat">Sell Meat</button>
-    <hr>
-    <p>操作方法：</p>
-    <ul>
-      <li>自動で前進</li>
-      <li>W / ↑ : 前進</li>
-      <li>S / ↓ : 後退</li>
-      <li>A / ← : 左移動</li>
-      <li>D / → : 右移動</li>
-    </ul>
+    <div>HP: <span id="hp">100</span></div>
+    <div>Gold: <span id="gold">0</span></div>
+    <div>操作: WASD または ↑↓←→ で移動</div>
+    <div>座標: <span id="coords">x:0 y:0 z:0</span></div>
   </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/loaders/GLTFLoader.js"></script>
-
-  <script src="game.js"></script>
-
+  <script type="module" src="./game.js"></script>
 </body>
 </html>
